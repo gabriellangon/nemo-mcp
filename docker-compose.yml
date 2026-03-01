@@ -1,0 +1,39 @@
+version: "3.8"
+
+services:
+  # ── PostgreSQL Database ─────────────────────────────────
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: nemo
+      POSTGRES_USER: nemo
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-changeme}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./db/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
+    ports:
+      - "127.0.0.1:5433:5432"  # Only accessible locally
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U nemo -d nemo"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  # ── MCP Server ──────────────────────────────────────────
+  mcp:
+    build: .
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      TRANSPORT: http
+      PORT: "3100"
+      STORAGE_TYPE: postgres
+      DATABASE_URL: postgresql://nemo:${DB_PASSWORD:-changeme}@db:5432/nemo
+    ports:
+      - "127.0.0.1:3100:3100"  # Expose locally, nginx will proxy
+
+volumes:
+  pgdata:

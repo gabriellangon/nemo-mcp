@@ -1,0 +1,35 @@
+{
+  "name": "nemo-mcp-server",
+  "version": "1.0.0",
+  "description": "MCP server for a personal knowledge base — store conversations, bookmarks, reminders, and notes from AI chats",
+  "type": "module",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "tsx watch src/index.ts"
+  },
+  "keywords": [
+    "mcp",
+    "knowledge-base",
+    "second-brain",
+    "claude",
+    "chatgpt"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.12.1",
+    "@supabase/supabase-js": "^2.49.4",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "pg": "^8.13.3",
+    "zod": "^3.24.4"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.1",
+    "@types/node": "^22.15.3",
+    "@types/pg": "^8.11.13",
+    "tsx": "^4.19.4",
+    "typescript": "^5.8.3"
+  }
+}

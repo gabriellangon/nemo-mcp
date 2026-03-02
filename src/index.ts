@@ -8,6 +8,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import express from "express";
+import { pathToFileURL } from "node:url";
 
 import type { StorageAdapter } from "./types.js";
 import { SupabaseAdapter } from "./services/supabase-adapter.js";
@@ -16,7 +17,7 @@ import { registerAllTools } from "./tools/index.js";
 
 // ── Configuration ──────────────────────────────────────────
 
-function getStorageAdapter(): StorageAdapter {
+export function getStorageAdapter(): StorageAdapter {
   const storageType = process.env.STORAGE_TYPE || "supabase";
 
   if (storageType === "supabase") {
@@ -48,17 +49,19 @@ function getStorageAdapter(): StorageAdapter {
 
 // ── Server Setup ───────────────────────────────────────────
 
-const server = new McpServer({
-  name: "nemo-mcp-server",
-  version: "1.0.0",
-});
+export function createMcpServer(storage: StorageAdapter = getStorageAdapter()): McpServer {
+  const server = new McpServer({
+    name: "nemo-mcp-server",
+    version: "1.0.0",
+  });
 
-const storage = getStorageAdapter();
-registerAllTools(server, storage);
+  registerAllTools(server, storage);
+  return server;
+}
 
 // ── Transport: Streamable HTTP (for remote access) ─────────
 
-async function runHTTP(): Promise<void> {
+export function createHttpApp(server: Pick<McpServer, "connect">): express.Express {
   const app = express();
   app.use(express.json());
 
@@ -78,6 +81,12 @@ async function runHTTP(): Promise<void> {
     await transport.handleRequest(req, res, req.body);
   });
 
+  return app;
+}
+
+export async function runHTTP(server: McpServer = createMcpServer()): Promise<void> {
+  const app = createHttpApp(server);
+
   const port = parseInt(process.env.PORT || "3100");
   app.listen(port, "0.0.0.0", () => {
     console.error(`Nemo MCP server running on http://0.0.0.0:${port}/mcp`);
@@ -87,7 +96,7 @@ async function runHTTP(): Promise<void> {
 
 // ── Transport: stdio (for local use) ───────────────────────
 
-async function runStdio(): Promise<void> {
+export async function runStdio(server: McpServer = createMcpServer()): Promise<void> {
   const transport = new StdioServerTransport();
   await server.connect(transport);
   console.error("Nemo MCP server running on stdio");
@@ -95,15 +104,23 @@ async function runStdio(): Promise<void> {
 
 // ── Entry Point ────────────────────────────────────────────
 
-const transport = process.env.TRANSPORT || "http";
+export async function main(): Promise<void> {
+  const server = createMcpServer();
+  const transport = process.env.TRANSPORT || "http";
 
-if (transport === "http") {
-  runHTTP().catch((error) => {
-    console.error("Server error:", error);
-    process.exit(1);
-  });
-} else {
-  runStdio().catch((error) => {
+  if (transport === "http") {
+    await runHTTP(server);
+    return;
+  }
+
+  await runStdio(server);
+}
+
+const isMainModule =
+  process.argv[1] !== undefined && import.meta.url === pathToFileURL(process.argv[1]).href;
+
+if (isMainModule) {
+  main().catch((error) => {
     console.error("Server error:", error);
     process.exit(1);
   });

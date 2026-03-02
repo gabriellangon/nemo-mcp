@@ -1,7 +1,7 @@
 {
   "name": "nemo-mcp-server",
   "version": "1.0.0",
-  "description": "MCP server for a personal knowledge base — store conversations, bookmarks, reminders, and notes from AI chats",
+  "description": "MCP server for personal note-taking — store notes, bookmarks, reminders, and conversation takeaways from AI chats",
   "type": "module",
   "main": "dist/index.js",
   "scripts": {
@@ -11,7 +11,7 @@
   },
   "keywords": [
     "mcp",
-    "knowledge-base",
+    "note-taking",
     "second-brain",
     "claude",
     "chatgpt"

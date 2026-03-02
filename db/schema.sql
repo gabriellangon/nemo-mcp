@@ -10,9 +10,9 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 -- For Supabase: pgvector can be enabled later for semantic search
 
 -- ============================================================
--- Knowledge Entries
+-- Notes
 -- ============================================================
-CREATE TABLE IF NOT EXISTS knowledge (
+CREATE TABLE IF NOT EXISTS notes (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     title TEXT NOT NULL,
     content TEXT NOT NULL,
@@ -27,14 +27,14 @@ CREATE TABLE IF NOT EXISTS knowledge (
 );
 
 -- Full-text search index
-CREATE INDEX IF NOT EXISTS idx_knowledge_fts ON knowledge
+CREATE INDEX IF NOT EXISTS idx_notes_fts ON notes
     USING GIN (to_tsvector('english', title || ' ' || content));
 
 -- Category index
-CREATE INDEX IF NOT EXISTS idx_knowledge_category ON knowledge(category);
+CREATE INDEX IF NOT EXISTS idx_notes_category ON notes(category);
 
 -- Tags index
-CREATE INDEX IF NOT EXISTS idx_knowledge_tags ON knowledge USING GIN(tags);
+CREATE INDEX IF NOT EXISTS idx_notes_tags ON notes USING GIN(tags);
 
 -- ============================================================
 -- Reminders
@@ -81,8 +81,8 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE OR REPLACE TRIGGER knowledge_updated_at
-    BEFORE UPDATE ON knowledge
+CREATE OR REPLACE TRIGGER notes_updated_at
+    BEFORE UPDATE ON notes
     FOR EACH ROW
     EXECUTE FUNCTION update_updated_at();
 
@@ -90,11 +90,11 @@ CREATE OR REPLACE TRIGGER knowledge_updated_at
 -- Supabase RLS Policies (only applied if using Supabase)
 -- Uncomment if deploying to Supabase with auth
 -- ============================================================
--- ALTER TABLE knowledge ENABLE ROW LEVEL SECURITY;
+-- ALTER TABLE notes ENABLE ROW LEVEL SECURITY;
 -- ALTER TABLE reminders ENABLE ROW LEVEL SECURITY;
 -- ALTER TABLE bookmarks ENABLE ROW LEVEL SECURITY;
 --
--- CREATE POLICY "Allow all for authenticated users" ON knowledge
+-- CREATE POLICY "Allow all for authenticated users" ON notes
 --     FOR ALL USING (auth.role() = 'authenticated');
 -- CREATE POLICY "Allow all for authenticated users" ON reminders
 --     FOR ALL USING (auth.role() = 'authenticated');

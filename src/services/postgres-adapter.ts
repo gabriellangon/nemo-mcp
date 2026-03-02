@@ -3,7 +3,7 @@
 // ============================================================
 
 import pg from "pg";
-import type { StorageAdapter, KnowledgeEntry, Reminder, Bookmark } from "../types.js";
+import type { StorageAdapter, NoteEntry, Reminder, Bookmark } from "../types.js";
 
 const { Pool } = pg;
 
@@ -24,30 +24,30 @@ export class PostgresAdapter implements StorageAdapter {
     return rows[0] || null;
   }
 
-  // ── Knowledge ──────────────────────────────────────────────
+  // ── Notes ──────────────────────────────────────────────────
 
-  async saveKnowledge(
-    entry: Omit<KnowledgeEntry, "id" | "created_at" | "updated_at">
-  ): Promise<KnowledgeEntry> {
-    const result = await this.queryOne<KnowledgeEntry>(
-      `INSERT INTO knowledge (title, content, category, tags, source, entry_type, metadata)
+  async saveNote(
+    entry: Omit<NoteEntry, "id" | "created_at" | "updated_at">
+  ): Promise<NoteEntry> {
+    const result = await this.queryOne<NoteEntry>(
+      `INSERT INTO notes (title, content, category, tags, source, entry_type, metadata)
        VALUES ($1, $2, $3, $4, $5, $6, $7)
        RETURNING *`,
       [entry.title, entry.content, entry.category, entry.tags, entry.source, entry.entry_type, JSON.stringify(entry.metadata)]
     );
-    if (!result) throw new Error("Failed to save knowledge entry");
+    if (!result) throw new Error("Failed to save note");
     return result;
   }
 
-  async searchKnowledge(
+  async searchNotes(
     query: string,
     category?: string,
     tags?: string[],
     limit: number = 20
-  ): Promise<KnowledgeEntry[]> {
+  ): Promise<NoteEntry[]> {
     let sql = `
       SELECT *, ts_rank(to_tsvector('english', title || ' ' || content), plainto_tsquery('english', $1)) AS rank
-      FROM knowledge
+      FROM notes
       WHERE to_tsvector('english', title || ' ' || content) @@ plainto_tsquery('english', $1)
          OR title ILIKE '%' || $1 || '%'
          OR content ILIKE '%' || $1 || '%'
@@ -70,21 +70,21 @@ export class PostgresAdapter implements StorageAdapter {
     sql += ` ORDER BY rank DESC NULLS LAST, created_at DESC LIMIT $${paramIdx}`;
     params.push(limit);
 
-    return this.query<KnowledgeEntry>(sql, params);
+    return this.query<NoteEntry>(sql, params);
   }
 
   async listCategories(): Promise<{ category: string; count: number }[]> {
     return this.query<{ category: string; count: number }>(
-      `SELECT category, COUNT(*)::int AS count FROM knowledge GROUP BY category ORDER BY count DESC`
+      `SELECT category, COUNT(*)::int AS count FROM notes GROUP BY category ORDER BY count DESC`
     );
   }
 
-  async getKnowledge(id: string): Promise<KnowledgeEntry | null> {
-    return this.queryOne<KnowledgeEntry>(`SELECT * FROM knowledge WHERE id = $1`, [id]);
+  async getNote(id: string): Promise<NoteEntry | null> {
+    return this.queryOne<NoteEntry>(`SELECT * FROM notes WHERE id = $1`, [id]);
   }
 
-  async deleteKnowledge(id: string): Promise<boolean> {
-    const result = await this.pool.query(`DELETE FROM knowledge WHERE id = $1`, [id]);
+  async deleteNote(id: string): Promise<boolean> {
+    const result = await this.pool.query(`DELETE FROM notes WHERE id = $1`, [id]);
     return (result.rowCount || 0) > 0;
   }
 
@@ -163,14 +163,14 @@ export class PostgresAdapter implements StorageAdapter {
   // ── Stats ──────────────────────────────────────────────────
 
   async getStats(): Promise<{
-    total_knowledge: number;
+    total_notes: number;
     total_reminders: number;
     total_bookmarks: number;
     pending_reminders: number;
     categories: string[];
   }> {
-    const [knowledge, reminders, bookmarks, pending, cats] = await Promise.all([
-      this.queryOne<{ count: number }>(`SELECT COUNT(*)::int AS count FROM knowledge`),
+    const [notes, reminders, bookmarks, pending, cats] = await Promise.all([
+      this.queryOne<{ count: number }>(`SELECT COUNT(*)::int AS count FROM notes`),
       this.queryOne<{ count: number }>(`SELECT COUNT(*)::int AS count FROM reminders`),
       this.queryOne<{ count: number }>(`SELECT COUNT(*)::int AS count FROM bookmarks`),
       this.queryOne<{ count: number }>(`SELECT COUNT(*)::int AS count FROM reminders WHERE is_done = FALSE`),
@@ -178,7 +178,7 @@ export class PostgresAdapter implements StorageAdapter {
     ]);
 
     return {
-      total_knowledge: knowledge?.count || 0,
+      total_notes: notes?.count || 0,
       total_reminders: reminders?.count || 0,
       total_bookmarks: bookmarks?.count || 0,
       pending_reminders: pending?.count || 0,

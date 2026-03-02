@@ -2,7 +2,7 @@
 // Nemo — Type Definitions
 // ============================================================
 
-export interface KnowledgeEntry {
+export interface NoteEntry {
   id: string;
   title: string;
   content: string;
@@ -39,12 +39,12 @@ export type EntryType = "conversation" | "note" | "idea" | "snippet" | "summary"
 export type Priority = "low" | "medium" | "high" | "urgent";
 
 export interface StorageAdapter {
-  // Knowledge
-  saveKnowledge(entry: Omit<KnowledgeEntry, "id" | "created_at" | "updated_at">): Promise<KnowledgeEntry>;
-  searchKnowledge(query: string, category?: string, tags?: string[], limit?: number): Promise<KnowledgeEntry[]>;
+  // Notes
+  saveNote(entry: Omit<NoteEntry, "id" | "created_at" | "updated_at">): Promise<NoteEntry>;
+  searchNotes(query: string, category?: string, tags?: string[], limit?: number): Promise<NoteEntry[]>;
   listCategories(): Promise<{ category: string; count: number }[]>;
-  getKnowledge(id: string): Promise<KnowledgeEntry | null>;
-  deleteKnowledge(id: string): Promise<boolean>;
+  getNote(id: string): Promise<NoteEntry | null>;
+  deleteNote(id: string): Promise<boolean>;
 
   // Reminders
   addReminder(reminder: Omit<Reminder, "id" | "created_at">): Promise<Reminder>;
@@ -58,7 +58,7 @@ export interface StorageAdapter {
 
   // Utility
   getStats(): Promise<{
-    total_knowledge: number;
+    total_notes: number;
     total_reminders: number;
     total_bookmarks: number;
     pending_reminders: number;

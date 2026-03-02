@@ -1,6 +1,6 @@
 // ============================================================
 // Nemo — MCP Server
-// A personal knowledge base accessible from AI assistants
+// A personal note-taking MCP accessible from AI assistants
 // ============================================================
 
 import "dotenv/config";

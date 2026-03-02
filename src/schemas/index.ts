@@ -4,13 +4,13 @@
 
 import { z } from "zod";
 
-// ── Knowledge ────────────────────────────────────────────────
+// ── Notes ────────────────────────────────────────────────────
 
-export const SaveKnowledgeSchema = z.object({
+export const SaveNoteSchema = z.object({
   title: z.string()
     .min(1, "Title is required")
     .max(500, "Title must be under 500 characters")
-    .describe("Title or summary of the knowledge entry"),
+    .describe("Title or summary of the note"),
   content: z.string()
     .min(1, "Content is required")
     .describe("The full content to store — conversation excerpt, note, idea, code snippet, etc."),
@@ -22,7 +22,7 @@ export const SaveKnowledgeSchema = z.object({
     .describe("Tags for filtering (e.g. ['python', 'docker', 'tutorial'])"),
   source: z.string()
     .optional()
-    .describe("Source of the knowledge (e.g. 'claude-chat', 'chatgpt', 'manual', 'web')"),
+    .describe("Source of the note (e.g. 'claude-chat', 'chatgpt', 'manual', 'web')"),
   entry_type: z.enum(["conversation", "note", "idea", "snippet", "summary", "resource"])
     .default("note")
     .describe("Type of entry: conversation, note, idea, snippet, summary, or resource"),
@@ -31,7 +31,7 @@ export const SaveKnowledgeSchema = z.object({
     .describe("Additional metadata as key-value pairs"),
 }).strict();
 
-export const SearchKnowledgeSchema = z.object({
+export const SearchNotesSchema = z.object({
   query: z.string()
     .min(1, "Search query is required")
     .describe("Search term to find in titles and content"),
@@ -49,12 +49,12 @@ export const SearchKnowledgeSchema = z.object({
     .describe("Maximum number of results to return"),
 }).strict();
 
-export const GetKnowledgeSchema = z.object({
-  id: z.string().uuid().describe("UUID of the knowledge entry to retrieve"),
+export const GetNoteSchema = z.object({
+  id: z.string().uuid().describe("UUID of the note to retrieve"),
 }).strict();
 
-export const DeleteKnowledgeSchema = z.object({
-  id: z.string().uuid().describe("UUID of the knowledge entry to delete"),
+export const DeleteNoteSchema = z.object({
+  id: z.string().uuid().describe("UUID of the note to delete"),
 }).strict();
 
 // ── Reminders ────────────────────────────────────────────────

@@ -1,6 +1,6 @@
 # Nemo Mobile App — Spécification Fonctionnelle
 
-> Application mobile compagnon pour consulter et gérer votre base de connaissances Nemo
+> Application mobile compagnon pour consulter et gérer vos notes personnelles dans Nemo
 
 ## Table des matières
 
@@ -20,15 +20,15 @@
 
 ### Qu'est-ce que Nemo Mobile ?
 
-Nemo Mobile est l'application compagnon du serveur MCP Nemo. Elle permet aux utilisateurs de **consulter, rechercher et gérer** leur base de connaissances personnelle depuis leur smartphone.
+Nemo Mobile est l'application compagnon du serveur MCP Nemo. Elle permet aux utilisateurs de **consulter, rechercher et gérer** leurs notes personnelles depuis leur smartphone.
 
-**Le serveur MCP Nemo** permet de sauvegarder des connaissances via des conversations avec Claude ou ChatGPT. **L'application mobile Nemo** permet de les consulter et les gérer à tout moment.
+**Le serveur MCP Nemo** permet de sauvegarder des notes via des conversations avec Claude ou ChatGPT. **L'application mobile Nemo** permet de les consulter et les gérer à tout moment.
 
 ### Objectifs principaux
 
 | Objectif | Description |
 |----------|-------------|
-| **Consultation** | Accéder rapidement à toutes les connaissances sauvegardées |
+| **Consultation** | Accéder rapidement à toutes les notes sauvegardées |
 | **Recherche** | Retrouver une information en quelques secondes via recherche full-text |
 | **Gestion** | Modifier, organiser et supprimer les entrées |
 | **Rappels** | Consulter et gérer les rappels, recevoir des notifications |
@@ -57,7 +57,7 @@ Nemo Mobile est l'application compagnon du serveur MCP Nemo. Elle permet aux uti
 ┌─────────────────────────────────────────────────────────────────┐
 │                          Supabase                                │
 │  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐          │
-│  │   knowledge  │  │   reminders  │  │   bookmarks  │          │
+│  │    notes     │  │   reminders  │  │   bookmarks  │          │
 │  └──────────────┘  └──────────────┘  └──────────────┘          │
 │                                                                  │
 │  ┌──────────────┐  ┌──────────────┐                             │
@@ -72,11 +72,11 @@ L'application se connecte **directement à Supabase** (pas au serveur MCP). Le s
 
 ## Fonctionnalités
 
-### Module Knowledge (Connaissances)
+### Module Notes
 
 | Fonctionnalité | Description |
 |----------------|-------------|
-| Lister les connaissances | Afficher toutes les entrées avec pagination |
+| Lister les notes | Afficher toutes les entrées avec pagination |
 | Filtrer par catégorie | Filtrer par catégorie (devops, programming, etc.) |
 | Filtrer par type | Filtrer par type (note, conversation, idea, snippet, summary, resource) |
 | Filtrer par tags | Filtrer par un ou plusieurs tags |
@@ -118,10 +118,10 @@ L'application se connecte **directement à Supabase** (pas au serveur MCP). Le s
 
 | Fonctionnalité | Description |
 |----------------|-------------|
-| Statistiques | Nombre total de connaissances, rappels, bookmarks |
+| Statistiques | Nombre total de notes, rappels, bookmarks |
 | Rappels du jour | Liste des rappels à échéance aujourd'hui |
 | Rappels en retard | Liste des rappels dépassés non complétés |
-| Derniers ajouts | Les 5 dernières connaissances ajoutées |
+| Derniers ajouts | Les 5 dernières notes ajoutées |
 | Catégories | Répartition par catégorie avec compteurs |
 
 ---
@@ -159,12 +159,12 @@ Cet écran apparaît si l'utilisateur n'est pas connecté (token expiré ou prem
 
 ### 3. Écran Dashboard (Accueil)
 
-- Statistiques en cartes (knowledge count, reminders count, bookmarks count)
+- Statistiques en cartes (notes count, reminders count, bookmarks count)
 - Section "Rappels urgents" (rappels du jour + en retard)
-- Section "Ajouts récents" (dernières 5 connaissances)
+- Section "Ajouts récents" (5 dernières notes)
 - Navigation vers les 3 modules principaux
 
-### 4. Écran Liste des Connaissances
+### 4. Écran Liste des Notes
 
 - Barre de recherche en haut
 - Chips/filtres : catégories, types, tags
@@ -177,7 +177,7 @@ Cet écran apparaît si l'utilisateur n'est pas connecté (token expiré ou prem
 - Pull-to-refresh
 - Infinite scroll (pagination)
 
-### 5. Écran Détail d'une Connaissance
+### 5. Écran Détail d'une Note
 
 - Titre (éditable)
 - Badges : catégorie, type
@@ -187,7 +187,7 @@ Cet écran apparaît si l'utilisateur n'est pas connecté (token expiré ou prem
 - Dates : création, dernière modification
 - Actions : Modifier, Copier, Partager, Supprimer
 
-### 6. Écran Édition d'une Connaissance
+### 6. Écran Édition d'une Note
 
 - Champ : Titre
 - Champ : Contenu (textarea avec support Markdown)
@@ -271,20 +271,20 @@ Cet écran apparaît si l'utilisateur n'est pas connecté (token expiré ou prem
 | AUTH-2 | Utilisateur | Rester connecté automatiquement | Ne pas saisir mes identifiants à chaque ouverture |
 | AUTH-3 | Utilisateur | Me déconnecter | Sécuriser mes données sur un appareil partagé |
 
-### Knowledge
+### Notes
 
 | ID | En tant que | Je veux | Afin de |
 |----|------------|---------|---------|
-| KN-1 | Utilisateur | Voir la liste de mes connaissances | Parcourir ce que j'ai sauvegardé |
-| KN-2 | Utilisateur | Rechercher dans mes connaissances | Retrouver rapidement une information |
+| KN-1 | Utilisateur | Voir la liste de mes notes | Parcourir ce que j'ai sauvegardé |
+| KN-2 | Utilisateur | Rechercher dans mes notes | Retrouver rapidement une information |
 | KN-3 | Utilisateur | Filtrer par catégorie | Voir uniquement les notes d'un domaine |
 | KN-4 | Utilisateur | Filtrer par tags | Affiner ma recherche |
-| KN-5 | Utilisateur | Voir le détail d'une connaissance | Lire le contenu complet |
-| KN-6 | Utilisateur | Modifier une connaissance | Corriger ou compléter une entrée |
-| KN-7 | Utilisateur | Supprimer une connaissance | Retirer une entrée obsolète |
+| KN-5 | Utilisateur | Voir le détail d'une note | Lire le contenu complet |
+| KN-6 | Utilisateur | Modifier une note | Corriger ou compléter une entrée |
+| KN-7 | Utilisateur | Supprimer une note | Retirer une entrée obsolète |
 | KN-8 | Utilisateur | Copier le contenu | L'utiliser dans une autre app |
-| KN-9 | Utilisateur | Partager une connaissance | L'envoyer à quelqu'un |
-| KN-10 | Utilisateur | Créer une connaissance | Ajouter une note manuellement |
+| KN-9 | Utilisateur | Partager une note | L'envoyer à quelqu'un |
+| KN-10 | Utilisateur | Créer une note | Ajouter une note manuellement |
 
 ### Reminders
 
@@ -334,10 +334,10 @@ Cet écran apparaît si l'utilisateur n'est pas connecté (token expiré ou prem
 
 ## Modèles de données
 
-### Knowledge
+### Notes
 
 ```typescript
-interface Knowledge {
+interface Note {
   id: string;                    // UUID
   title: string;                 // Titre de l'entrée
   content: string;               // Contenu complet
@@ -433,10 +433,10 @@ L'application utilise **Supabase Auth** avec authentification par email/mot de p
 Pour une utilisation multi-utilisateurs future, activer les politiques RLS dans Supabase :
 
 ```sql
--- Exemple de politique pour knowledge
-ALTER TABLE knowledge ENABLE ROW LEVEL SECURITY;
+-- Exemple de politique pour notes
+ALTER TABLE notes ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Users can only access their own data" ON knowledge
+CREATE POLICY "Users can only access their own data" ON notes
     FOR ALL USING (auth.uid() = user_id);
 ```
 
@@ -472,7 +472,7 @@ Les catégories sont **libres** — il n'y a pas de table `categories` dédiée.
 | Comportement | Description |
 |--------------|-------------|
 | Création | Implicite — toute nouvelle catégorie est créée automatiquement |
-| Liste | Obtenue via `SELECT DISTINCT category FROM knowledge` |
+| Liste | Obtenue via `SELECT DISTINCT category FROM notes` |
 | Validation | Aucune — l'utilisateur peut créer n'importe quelle catégorie |
 | Suppression | Une catégorie "disparaît" quand plus aucune entrée ne l'utilise |
 
@@ -532,22 +532,22 @@ Utiliser le SDK officiel Supabase :
 Exemples de requêtes Supabase :
 
 ```dart
-// Lister les connaissances avec pagination
+// Lister les notes avec pagination
 final response = await supabase
-    .from('knowledge')
+    .from('notes')
     .select()
     .order('created_at', ascending: false)
     .range(0, 19);
 
 // Recherche full-text
 final response = await supabase
-    .from('knowledge')
+    .from('notes')
     .select()
     .textSearch('title', 'docker');
 
 // Filtrer par catégorie
 final response = await supabase
-    .from('knowledge')
+    .from('notes')
     .select()
     .eq('category', 'devops');
 
@@ -582,7 +582,7 @@ Les fonctionnalités suivantes sont explicitement **hors périmètre** pour la V
 
 | Fonctionnalité | Raison |
 |----------------|--------|
-| Création de connaissances vocale | Complexité (speech-to-text) |
+| Création de notes vocales | Complexité (speech-to-text) |
 | Recherche sémantique (IA) | Nécessite pgvector + embeddings |
 | Stockage d'images | Nécessite Supabase Storage |
 | Export Markdown/Obsidian | Fonctionnalité secondaire |
@@ -597,7 +597,7 @@ Les fonctionnalités suivantes sont explicitement **hors périmètre** pour la V
 
 L'application Nemo Mobile est une app **simple et efficace** qui permet de :
 
-1. **Consulter** ses connaissances, rappels et bookmarks sauvegardés via Claude/ChatGPT
+1. **Consulter** ses notes, rappels et bookmarks sauvegardés via Claude/ChatGPT
 2. **Rechercher** rapidement dans sa base personnelle
 3. **Gérer** (modifier, supprimer) ses entrées
 4. **Recevoir** des notifications pour les rappels

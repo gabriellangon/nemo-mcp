@@ -1,8 +1,8 @@
 # Nemo — MCP Server
 
-> Turn your AI conversations into a structured, searchable knowledge base.
+> Turn your AI conversations into structured, searchable notes.
 
-An [MCP (Model Context Protocol)](https://modelcontextprotocol.io/) server that lets you save conversations, ideas, code snippets, bookmarks, and reminders directly from Claude, ChatGPT, or any MCP-compatible AI assistant.
+An [MCP (Model Context Protocol)](https://modelcontextprotocol.io/) server that lets you save notes, conversation takeaways, ideas, code snippets, bookmarks, and reminders directly from Claude, ChatGPT, or any MCP-compatible AI assistant.
 
 ## Disclaimer
 
@@ -25,16 +25,16 @@ You're chatting with Claude on your phone and the conversation is brilliant. Ins
 
 > *"Save this in Nemo under DevOps, tag it docker and kubernetes"*
 
-Claude calls your MCP server, and your knowledge is stored, categorized, and searchable forever.
+Claude calls your MCP server, and your note is stored, categorized, and searchable later.
 
 ### Available Tools
 
 | Tool | Description |
 |------|-------------|
-| `nemo_save_knowledge` | Save a conversation, idea, snippet, or note |
-| `nemo_search_knowledge` | Full-text search through your knowledge base |
-| `nemo_get_knowledge` | Retrieve a specific entry by ID |
-| `nemo_delete_knowledge` | Delete an entry |
+| `nemo_save_note` | Save a conversation, idea, snippet, or note |
+| `nemo_search_notes` | Search through your saved notes |
+| `nemo_get_note` | Retrieve a specific note by ID |
+| `nemo_delete_note` | Delete a note |
 | `nemo_list_categories` | List all categories with counts |
 | `nemo_add_reminder` | Add a reminder with due date and priority |
 | `nemo_list_reminders` | List pending (or all) reminders |
@@ -190,7 +190,7 @@ Add to your `claude_desktop_config.json`:
 
 Nemo can send events to external services whenever something happens. This lets you build automations like:
 
-- **Save to Notion** — Every new knowledge entry creates a page in your Notion database
+- **Save to Notion** — Every new note creates a page in your Notion database
 - **Google Calendar** — New reminders automatically create calendar events
 - **Slack notifications** — Get pinged when you save something important
 - **Google Sheets** — Log all bookmarks to a spreadsheet
@@ -211,8 +211,8 @@ Nemo can send events to external services whenever something happens. This lets 
 
 | Event | Triggered when | Data included |
 |-------|---------------|---------------|
-| `knowledge.saved` | New knowledge entry saved | id, title, category, tags, content_preview, source |
-| `knowledge.deleted` | Knowledge entry deleted | id |
+| `note.saved` | New note saved | id, title, category, tags, content_preview, source |
+| `note.deleted` | Note deleted | id |
 | `reminder.created` | New reminder added | id, title, due_date, priority, description |
 | `reminder.completed` | Reminder marked as done | id |
 | `bookmark.saved` | New bookmark saved | id, url, title, tags, category, description |
@@ -223,7 +223,7 @@ Every webhook receives a JSON POST with this structure:
 
 ```json
 {
-  "event": "knowledge.saved",
+  "event": "note.saved",
   "timestamp": "2025-03-15T14:30:00.000Z",
   "data": {
     "id": "uuid-here",
@@ -244,7 +244,7 @@ You can send different events to different services:
 WEBHOOKS_JSON='[
   {
     "url": "https://hook.eu2.make.com/xxx",
-    "events": ["knowledge.saved", "bookmark.saved"],
+    "events": ["note.saved", "bookmark.saved"],
     "name": "Make - Notion sync"
   },
   {
@@ -274,7 +274,7 @@ Each request includes an `X-Nemo-Signature` header with a `sha256=` HMAC of the 
 
 ## Future Ideas
 
-- **Flutter app** to browse your knowledge base (connects directly to Supabase)
+- **Flutter app** to browse your notes (connects directly to Supabase)
 - **Vector search** with pgvector for semantic "find things similar to..."
 - **Image storage** via Supabase Storage
 - **Export** to Markdown/Obsidian

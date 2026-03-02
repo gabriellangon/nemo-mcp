@@ -3,7 +3,7 @@
 // ============================================================
 
 import { createClient, SupabaseClient } from "@supabase/supabase-js";
-import type { StorageAdapter, KnowledgeEntry, Reminder, Bookmark } from "../types.js";
+import type { StorageAdapter, NoteEntry, Reminder, Bookmark } from "../types.js";
 
 export class SupabaseAdapter implements StorageAdapter {
   private client: SupabaseClient;
@@ -12,29 +12,29 @@ export class SupabaseAdapter implements StorageAdapter {
     this.client = createClient(url, serviceKey);
   }
 
-  // ── Knowledge ──────────────────────────────────────────────
+  // ── Notes ──────────────────────────────────────────────────
 
-  async saveKnowledge(
-    entry: Omit<KnowledgeEntry, "id" | "created_at" | "updated_at">
-  ): Promise<KnowledgeEntry> {
+  async saveNote(
+    entry: Omit<NoteEntry, "id" | "created_at" | "updated_at">
+  ): Promise<NoteEntry> {
     const { data, error } = await this.client
-      .from("knowledge")
+      .from("notes")
       .insert(entry)
       .select()
       .single();
 
-    if (error) throw new Error(`Failed to save knowledge: ${error.message}`);
-    return data as KnowledgeEntry;
+    if (error) throw new Error(`Failed to save note: ${error.message}`);
+    return data as NoteEntry;
   }
 
-  async searchKnowledge(
+  async searchNotes(
     query: string,
     category?: string,
     tags?: string[],
     limit: number = 20
-  ): Promise<KnowledgeEntry[]> {
+  ): Promise<NoteEntry[]> {
     let q = this.client
-      .from("knowledge")
+      .from("notes")
       .select("*")
       .textSearch("title", query, { type: "websearch" })
       .limit(limit)
@@ -43,7 +43,7 @@ export class SupabaseAdapter implements StorageAdapter {
     // If websearch on title doesn't find results, we'll also search content
     // For now, use ilike as a broader fallback
     let { data, error } = await this.client
-      .from("knowledge")
+      .from("notes")
       .select("*")
       .or(`title.ilike.%${query}%,content.ilike.%${query}%`)
       .limit(limit)
@@ -51,7 +51,7 @@ export class SupabaseAdapter implements StorageAdapter {
 
     if (category) {
       ({ data, error } = await this.client
-        .from("knowledge")
+        .from("notes")
         .select("*")
         .or(`title.ilike.%${query}%,content.ilike.%${query}%`)
         .eq("category", category)
@@ -61,7 +61,7 @@ export class SupabaseAdapter implements StorageAdapter {
 
     if (tags && tags.length > 0) {
       ({ data, error } = await this.client
-        .from("knowledge")
+        .from("notes")
         .select("*")
         .or(`title.ilike.%${query}%,content.ilike.%${query}%`)
         .overlaps("tags", tags)
@@ -70,12 +70,12 @@ export class SupabaseAdapter implements StorageAdapter {
     }
 
     if (error) throw new Error(`Search failed: ${error.message}`);
-    return (data || []) as KnowledgeEntry[];
+    return (data || []) as NoteEntry[];
   }
 
   async listCategories(): Promise<{ category: string; count: number }[]> {
     const { data, error } = await this.client
-      .from("knowledge")
+      .from("notes")
       .select("category");
 
     if (error) throw new Error(`Failed to list categories: ${error.message}`);
@@ -90,20 +90,20 @@ export class SupabaseAdapter implements StorageAdapter {
       .sort((a, b) => b.count - a.count);
   }
 
-  async getKnowledge(id: string): Promise<KnowledgeEntry | null> {
+  async getNote(id: string): Promise<NoteEntry | null> {
     const { data, error } = await this.client
-      .from("knowledge")
+      .from("notes")
       .select("*")
       .eq("id", id)
       .single();
 
     if (error) return null;
-    return data as KnowledgeEntry;
+    return data as NoteEntry;
   }
 
-  async deleteKnowledge(id: string): Promise<boolean> {
+  async deleteNote(id: string): Promise<boolean> {
     const { error } = await this.client
-      .from("knowledge")
+      .from("notes")
       .delete()
       .eq("id", id);
 
@@ -196,14 +196,14 @@ export class SupabaseAdapter implements StorageAdapter {
   // ── Stats ──────────────────────────────────────────────────
 
   async getStats(): Promise<{
-    total_knowledge: number;
+    total_notes: number;
     total_reminders: number;
     total_bookmarks: number;
     pending_reminders: number;
     categories: string[];
   }> {
-    const [knowledge, reminders, bookmarks, pending, cats] = await Promise.all([
-      this.client.from("knowledge").select("id", { count: "exact", head: true }),
+    const [notes, reminders, bookmarks, pending, cats] = await Promise.all([
+      this.client.from("notes").select("id", { count: "exact", head: true }),
       this.client.from("reminders").select("id", { count: "exact", head: true }),
       this.client.from("bookmarks").select("id", { count: "exact", head: true }),
       this.client.from("reminders").select("id", { count: "exact", head: true }).eq("is_done", false),
@@ -211,7 +211,7 @@ export class SupabaseAdapter implements StorageAdapter {
     ]);
 
     return {
-      total_knowledge: knowledge.count || 0,
+      total_notes: notes.count || 0,
       total_reminders: reminders.count || 0,
       total_bookmarks: bookmarks.count || 0,
       pending_reminders: pending.count || 0,

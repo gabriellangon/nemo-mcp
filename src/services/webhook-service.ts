@@ -11,7 +11,7 @@ export interface WebhookEvent {
 
 export interface WebhookConfig {
   url: string;
-  events: string[];  // e.g. ["knowledge.saved", "reminder.created"] or ["*"] for all
+  events: string[];  // e.g. ["note.saved", "reminder.created"] or ["*"] for all
   secret?: string;   // Optional shared secret for signature verification
   name?: string;     // Friendly name (e.g. "Make - Notion sync")
 }
@@ -45,7 +45,7 @@ export class WebhookService {
    *   WEBHOOK_SECRET=my-secret                (optional)
    * 
    * Advanced mode (multiple webhooks):
-   *   WEBHOOKS_JSON=[{"url":"https://hook.make.com/xxx","events":["knowledge.saved"],"name":"Make"},{"url":"https://hooks.zapier.com/yyy","events":["*"],"name":"Zapier"}]
+   *   WEBHOOKS_JSON=[{"url":"https://hook.make.com/xxx","events":["note.saved"],"name":"Make"},{"url":"https://hooks.zapier.com/yyy","events":["*"],"name":"Zapier"}]
    */
   private loadWebhooksFromEnv(): WebhookConfig[] {
     // Advanced mode: JSON array

@@ -1,15 +1,15 @@
 // ============================================================
-// Némor — Tool Registrations
+// Nemo — Tool Registrations
 // ============================================================
 
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { StorageAdapter } from "../types.js";
 import { getWebhookService } from "../services/webhook-service.js";
 import {
-  SaveKnowledgeSchema,
-  SearchKnowledgeSchema,
-  GetKnowledgeSchema,
-  DeleteKnowledgeSchema,
+  SaveNoteSchema,
+  SearchNotesSchema,
+  GetNoteSchema,
+  DeleteNoteSchema,
   AddReminderSchema,
   ListRemindersSchema,
   CompleteReminderSchema,
@@ -21,13 +21,13 @@ import {
 export function registerAllTools(server: McpServer, storage: StorageAdapter): void {
   const webhooks = getWebhookService();
 
-  // ── Knowledge Tools ──────────────────────────────────────
+  // ── Note Tools ───────────────────────────────────────────
 
   server.registerTool(
-    "nemor_save_knowledge",
+    "nemo_save_note",
     {
-      title: "Save Knowledge",
-      description: `Save a piece of knowledge to Némor.
+      title: "Save Note",
+      description: `Save a note to Nemo.
 
 Use this when the user wants to store a conversation excerpt, an idea, a code snippet, a summary, or any valuable information for future reference.
 
@@ -46,7 +46,7 @@ Args:
   - metadata: Additional key-value data
 
 Returns: The saved entry with its UUID`,
-      inputSchema: SaveKnowledgeSchema,
+      inputSchema: SaveNoteSchema,
       annotations: {
         readOnlyHint: false,
         destructiveHint: false,
@@ -56,7 +56,7 @@ Returns: The saved entry with its UUID`,
     },
     async (params) => {
       try {
-        const entry = await storage.saveKnowledge({
+        const entry = await storage.saveNote({
           title: params.title,
           content: params.content,
           category: params.category ?? "general",
@@ -66,7 +66,7 @@ Returns: The saved entry with its UUID`,
           metadata: params.metadata ?? {},
         });
 
-        webhooks.emit("knowledge.saved", {
+        webhooks.emit("note.saved", {
           id: entry.id,
           title: entry.title,
           category: entry.category,
@@ -79,23 +79,23 @@ Returns: The saved entry with its UUID`,
         return {
           content: [{
             type: "text" as const,
-            text: `Saved to Némor.\n\nID: ${entry.id}\nTitle: ${entry.title}\nCategory: ${entry.category}\nTags: ${entry.tags.join(", ") || "none"}\nType: ${entry.entry_type}`,
+            text: `Saved note to Nemo.\n\nID: ${entry.id}\nTitle: ${entry.title}\nCategory: ${entry.category}\nTags: ${entry.tags.join(", ") || "none"}\nType: ${entry.entry_type}`,
           }],
         };
       } catch (error) {
         return {
           isError: true,
-          content: [{ type: "text" as const, text: `Error saving knowledge: ${(error as Error).message}` }],
+          content: [{ type: "text" as const, text: `Error saving note: ${(error as Error).message}` }],
         };
       }
     }
   );
 
   server.registerTool(
-    "nemor_search_knowledge",
+    "nemo_search_notes",
     {
-      title: "Search Knowledge",
-      description: `Search through stored knowledge in Némor.
+      title: "Search Notes",
+      description: `Search through saved notes in Nemo.
 
 Use this to find previously saved conversations, notes, ideas, snippets, or any stored content. Supports filtering by category and tags.
 
@@ -106,7 +106,7 @@ Args:
   - limit: Max results (default 10)
 
 Returns: Matching entries with title, content preview, and metadata`,
-      inputSchema: SearchKnowledgeSchema,
+      inputSchema: SearchNotesSchema,
       annotations: {
         readOnlyHint: true,
         destructiveHint: false,
@@ -116,7 +116,7 @@ Returns: Matching entries with title, content preview, and metadata`,
     },
     async (params) => {
       try {
-        const results = await storage.searchKnowledge(
+        const results = await storage.searchNotes(
           params.query,
           params.category,
           params.tags,
@@ -125,7 +125,7 @@ Returns: Matching entries with title, content preview, and metadata`,
 
         if (results.length === 0) {
           return {
-            content: [{ type: "text" as const, text: `No results found for "${params.query}". Try broader terms or check available categories with nemor_list_categories.` }],
+            content: [{ type: "text" as const, text: `No notes found for "${params.query}". Try broader terms or check available categories with nemo_list_categories.` }],
           };
         }
 
@@ -147,16 +147,16 @@ Returns: Matching entries with title, content preview, and metadata`,
   );
 
   server.registerTool(
-    "nemor_get_knowledge",
+    "nemo_get_note",
     {
-      title: "Get Knowledge Entry",
-      description: `Retrieve a specific knowledge entry by its UUID.
+      title: "Get Note",
+      description: `Retrieve a specific note by its UUID.
 
 Args:
   - id: UUID of the entry
 
 Returns: Full entry with all content and metadata`,
-      inputSchema: GetKnowledgeSchema,
+      inputSchema: GetNoteSchema,
       annotations: {
         readOnlyHint: true,
         destructiveHint: false,
@@ -166,7 +166,7 @@ Returns: Full entry with all content and metadata`,
     },
     async (params) => {
       try {
-        const entry = await storage.getKnowledge(params.id);
+        const entry = await storage.getNote(params.id);
         if (!entry) {
           return {
             content: [{ type: "text" as const, text: `No entry found with ID: ${params.id}` }],
@@ -185,16 +185,16 @@ Returns: Full entry with all content and metadata`,
   );
 
   server.registerTool(
-    "nemor_delete_knowledge",
+    "nemo_delete_note",
     {
-      title: "Delete Knowledge Entry",
-      description: `Delete a knowledge entry by its UUID.
+      title: "Delete Note",
+      description: `Delete a note by its UUID.
 
 Args:
   - id: UUID of the entry to delete
 
 Returns: Confirmation of deletion`,
-      inputSchema: DeleteKnowledgeSchema,
+      inputSchema: DeleteNoteSchema,
       annotations: {
         readOnlyHint: false,
         destructiveHint: true,
@@ -204,9 +204,9 @@ Returns: Confirmation of deletion`,
     },
     async (params) => {
       try {
-        const success = await storage.deleteKnowledge(params.id);
+        const success = await storage.deleteNote(params.id);
         if (success) {
-          webhooks.emit("knowledge.deleted", { id: params.id });
+          webhooks.emit("note.deleted", { id: params.id });
         }
         return {
           content: [{
@@ -224,10 +224,10 @@ Returns: Confirmation of deletion`,
   );
 
   server.registerTool(
-    "nemor_list_categories",
+    "nemo_list_categories",
     {
       title: "List Categories",
-      description: `List all knowledge categories with entry counts.
+      description: `List all note categories with entry counts.
 
 Returns: Categories sorted by number of entries`,
       inputSchema: {},
@@ -243,7 +243,7 @@ Returns: Categories sorted by number of entries`,
         const categories = await storage.listCategories();
         if (categories.length === 0) {
           return {
-            content: [{ type: "text" as const, text: "No categories yet. Start saving knowledge to create categories!" }],
+            content: [{ type: "text" as const, text: "No categories yet. Start saving notes to create categories." }],
           };
         }
         const formatted = categories.map((c) => `- **${c.category}** (${c.count} entries)`).join("\n");
@@ -262,7 +262,7 @@ Returns: Categories sorted by number of entries`,
   // ── Reminder Tools ───────────────────────────────────────
 
   server.registerTool(
-    "nemor_add_reminder",
+    "nemo_add_reminder",
     {
       title: "Add Reminder",
       description: `Add a reminder with a due date and priority.
@@ -318,7 +318,7 @@ Returns: The created reminder`,
   );
 
   server.registerTool(
-    "nemor_list_reminders",
+    "nemo_list_reminders",
     {
       title: "List Reminders",
       description: `List all pending reminders (or all including completed ones).
@@ -361,7 +361,7 @@ Returns: Reminders sorted by due date`,
   );
 
   server.registerTool(
-    "nemor_complete_reminder",
+    "nemo_complete_reminder",
     {
       title: "Complete Reminder",
       description: `Mark a reminder as done.
@@ -402,7 +402,7 @@ Returns: Confirmation`,
   // ── Bookmark Tools ───────────────────────────────────────
 
   server.registerTool(
-    "nemor_save_bookmark",
+    "nemo_save_bookmark",
     {
       title: "Save Bookmark",
       description: `Save a URL as a bookmark with tags and description.
@@ -460,7 +460,7 @@ Returns: The saved bookmark`,
   );
 
   server.registerTool(
-    "nemor_search_bookmarks",
+    "nemo_search_bookmarks",
     {
       title: "Search Bookmarks",
       description: `Search saved bookmarks by title, description, or URL.
@@ -502,7 +502,7 @@ Returns: Matching bookmarks`,
   );
 
   server.registerTool(
-    "nemor_list_bookmarks",
+    "nemo_list_bookmarks",
     {
       title: "List Bookmarks",
       description: `List saved bookmarks, optionally filtered by category.
@@ -546,12 +546,12 @@ Returns: Bookmarks sorted by most recent`,
   // ── Dashboard Tool ───────────────────────────────────────
 
   server.registerTool(
-    "nemor_stats",
+    "nemo_stats",
     {
       title: "Brain Stats",
-      description: `Get an overview of what's stored in Némor.
+      description: `Get an overview of what's stored in Nemo.
 
-Returns: Total counts for knowledge entries, reminders, bookmarks, and available categories`,
+Returns: Total counts for notes, reminders, bookmarks, and available categories`,
       inputSchema: {},
       annotations: {
         readOnlyHint: true,
@@ -566,8 +566,8 @@ Returns: Total counts for knowledge entries, reminders, bookmarks, and available
         return {
           content: [{
             type: "text" as const,
-            text: `Némor Dashboard\n\n` +
-              `Knowledge entries: ${stats.total_knowledge}\n` +
+            text: `Nemo Dashboard\n\n` +
+              `Notes: ${stats.total_notes}\n` +
               `Reminders: ${stats.total_reminders} (${stats.pending_reminders} pending)\n` +
               `Bookmarks: ${stats.total_bookmarks}\n` +
               `Categories: ${stats.categories.join(", ") || "none yet"}`,

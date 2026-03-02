@@ -27,12 +27,12 @@ export class WebhookService {
     this.timeoutMs = parseInt(process.env.WEBHOOK_TIMEOUT_MS || "5000");
 
     if (this.webhooks.length > 0) {
-      console.error(`🔗 Webhooks configured: ${this.webhooks.length}`);
+      console.error(`Webhooks configured: ${this.webhooks.length}`);
       for (const wh of this.webhooks) {
         console.error(`   → ${wh.name || wh.url} (events: ${wh.events.join(", ")})`);
       }
     } else {
-      console.error("🔗 No webhooks configured (set WEBHOOK_URL or WEBHOOKS_JSON to enable)");
+      console.error("No webhooks configured (set WEBHOOK_URL or WEBHOOKS_JSON to enable)");
     }
   }
 
@@ -55,7 +55,7 @@ export class WebhookService {
         const parsed = JSON.parse(jsonConfig) as WebhookConfig[];
         return parsed.filter((wh) => wh.url);
       } catch (e) {
-        console.error("⚠️ Failed to parse WEBHOOKS_JSON:", (e as Error).message);
+        console.error("Failed to parse WEBHOOKS_JSON:", (e as Error).message);
         return [];
       }
     }
@@ -103,7 +103,7 @@ export class WebhookService {
     // Fire-and-forget: don't await, don't block the MCP response
     const promises = matchingWebhooks.map((wh) =>
       this.sendWithRetry(wh, event).catch((err) => {
-        console.error(`⚠️ Webhook failed [${wh.name || wh.url}]: ${(err as Error).message}`);
+        console.error(`Webhook failed [${wh.name || wh.url}]: ${(err as Error).message}`);
       })
     );
 
@@ -119,15 +119,15 @@ export class WebhookService {
     const body = JSON.stringify(event);
     const headers: Record<string, string> = {
       "Content-Type": "application/json",
-      "User-Agent": "Memento-MCP/1.0",
-      "X-Memento-Event": event.event,
+      "User-Agent": "Nemo-MCP/1.0",
+      "X-Nemo-Event": event.event,
     };
 
     // Add HMAC signature if secret is configured
     if (config.secret) {
       const { createHmac } = await import("node:crypto");
       const signature = createHmac("sha256", config.secret).update(body).digest("hex");
-      headers["X-Memento-Signature"] = `sha256=${signature}`;
+      headers["X-Nemo-Signature"] = `sha256=${signature}`;
     }
 
     for (let attempt = 0; attempt <= this.retryAttempts; attempt++) {
@@ -145,26 +145,26 @@ export class WebhookService {
         clearTimeout(timeout);
 
         if (response.ok) {
-          console.error(`✅ Webhook sent [${config.name || "default"}] → ${event.event}`);
+          console.error(`Webhook sent [${config.name || "default"}] -> ${event.event}`);
           return;
         }
 
         // Non-retryable status codes
         if (response.status >= 400 && response.status < 500 && response.status !== 429) {
-          console.error(`⚠️ Webhook rejected [${config.name}]: ${response.status} ${response.statusText}`);
+          console.error(`Webhook rejected [${config.name}]: ${response.status} ${response.statusText}`);
           return;
         }
 
         // Retryable: 429, 5xx
         if (attempt < this.retryAttempts) {
           const delay = Math.pow(2, attempt) * 1000; // Exponential backoff
-          console.error(`🔄 Webhook retry ${attempt + 1}/${this.retryAttempts} in ${delay}ms...`);
+          console.error(`Webhook retry ${attempt + 1}/${this.retryAttempts} in ${delay}ms...`);
           await new Promise((resolve) => setTimeout(resolve, delay));
         }
       } catch (err) {
         if (attempt < this.retryAttempts) {
           const delay = Math.pow(2, attempt) * 1000;
-          console.error(`🔄 Webhook error, retry ${attempt + 1}/${this.retryAttempts} in ${delay}ms: ${(err as Error).message}`);
+          console.error(`Webhook error, retry ${attempt + 1}/${this.retryAttempts} in ${delay}ms: ${(err as Error).message}`);
           await new Promise((resolve) => setTimeout(resolve, delay));
         } else {
           throw err;

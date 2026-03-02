@@ -1,17 +1,25 @@
-# 🧠 Nemo — MCP Server
+# Nemo — MCP Server
 
 > Turn your AI conversations into a structured, searchable knowledge base.
 
 An [MCP (Model Context Protocol)](https://modelcontextprotocol.io/) server that lets you save conversations, ideas, code snippets, bookmarks, and reminders directly from Claude, ChatGPT, or any MCP-compatible AI assistant.
 
-## 📁 Repository Layout
+## Disclaimer
+
+This project is experimental and is not ready for production use.
+
+The MCP endpoint is not secured yet: authentication and authorization are not implemented, so access is not protected by default. Do not expose this server publicly as-is.
+
+Before using it in production, you should at minimum add authentication, access control, proper secret management, rate limiting, and basic security hardening around the HTTP endpoint.
+
+## Repository Layout
 
 - `src/` — Runtime server code
 - `db/` — Public database schema and migrations
 - `docs/` — Product-facing public docs
 - `notes/` — Public work-in-progress notes, mockups, and experiments
 
-## ✨ What It Does
+## What It Does
 
 You're chatting with Claude on your phone and the conversation is brilliant. Instead of losing it, you say:
 
@@ -36,7 +44,7 @@ Claude calls your MCP server, and your knowledge is stored, categorized, and sea
 | `nemo_list_bookmarks` | List bookmarks by category |
 | `nemo_stats` | Dashboard with counts and categories |
 
-## 🏗️ Two Deployment Options
+## Two Deployment Options
 
 ### Option A: Supabase (Recommended)
 
@@ -56,7 +64,7 @@ Your Phone → Claude App → Your VPS (Docker: MCP Server + PostgreSQL)
 
 ---
 
-## 🚀 Quick Start — Option A: Supabase
+## Quick Start — Option A: Supabase
 
 ### 1. Create a Supabase Project
 
@@ -64,7 +72,7 @@ Your Phone → Claude App → Your VPS (Docker: MCP Server + PostgreSQL)
 2. Go to **SQL Editor** and run the contents of `db/schema.sql`
 3. Go to **Settings → API** and copy your:
    - Project URL (e.g., `https://abc123.supabase.co`)
-   - Service Role Key (⚠️ keep this secret!)
+   - Service Role Key (keep this secret!)
 
 ### 2. Deploy on Your VPS
 
@@ -88,7 +96,7 @@ cp .env.example .env
 
 # Test it
 node dist/index.js
-# Should see: 🧠 Nemo MCP server running on http://0.0.0.0:3100/mcp
+# Should see: Nemo MCP server running on http://0.0.0.0:3100/mcp
 ```
 
 ### 3. Keep It Running with pm2
@@ -118,7 +126,7 @@ sudo nginx -t && sudo systemctl reload nginx
 
 ---
 
-## 🚀 Quick Start — Option B: Self-Hosted (Docker)
+## Quick Start — Option B: Self-Hosted (Docker)
 
 ```bash
 # Clone the repo
@@ -142,7 +150,7 @@ Then set up nginx + HTTPS the same way as Option A.
 
 ---
 
-## 🔌 Connect to Claude
+## Connect to Claude
 
 ### Claude.ai (Web & Mobile)
 
@@ -178,7 +186,7 @@ Add to your `claude_desktop_config.json`:
 
 ---
 
-## 🔗 Webhooks — Connect to Make, Zapier, n8n
+## Webhooks — Connect to Make, Zapier, n8n
 
 Nemo can send events to external services whenever something happens. This lets you build automations like:
 
@@ -264,7 +272,7 @@ Each request includes an `X-Nemo-Signature` header with a `sha256=` HMAC of the 
 
 ---
 
-## 📱 Future Ideas
+## Future Ideas
 
 - **Flutter app** to browse your knowledge base (connects directly to Supabase)
 - **Vector search** with pgvector for semantic "find things similar to..."
@@ -274,7 +282,7 @@ Each request includes an `X-Nemo-Signature` header with a `sha256=` HMAC of the 
 
 ---
 
-## 🛠️ Development
+## Development
 
 ```bash
 # Install dependencies
@@ -290,6 +298,6 @@ npm run build
 npm test
 ```
 
-## 📄 License
+## License
 
 MIT — Use it, fork it, make it yours.

@@ -27,7 +27,7 @@ function getStorageAdapter(): StorageAdapter {
       console.error("Set STORAGE_TYPE=postgres to use self-hosted PostgreSQL instead.");
       process.exit(1);
     }
-    console.error(`🧠 Storage: Supabase (${url})`);
+    console.error(`Storage: Supabase (${url})`);
     return new SupabaseAdapter(url, key);
   }
 
@@ -38,7 +38,7 @@ function getStorageAdapter(): StorageAdapter {
       console.error("Example: DATABASE_URL=postgresql://user:pass@localhost:5432/nemo");
       process.exit(1);
     }
-    console.error(`🧠 Storage: PostgreSQL (${connectionString.replace(/\/\/.*@/, "//***@")})`);
+    console.error(`Storage: PostgreSQL (${connectionString.replace(/\/\/.*@/, "//***@")})`);
     return new PostgresAdapter(connectionString);
   }
 
@@ -80,7 +80,7 @@ async function runHTTP(): Promise<void> {
 
   const port = parseInt(process.env.PORT || "3100");
   app.listen(port, "0.0.0.0", () => {
-    console.error(`🧠 Nemo MCP server running on http://0.0.0.0:${port}/mcp`);
+    console.error(`Nemo MCP server running on http://0.0.0.0:${port}/mcp`);
     console.error(`   Health check: http://0.0.0.0:${port}/health`);
   });
 }
@@ -90,7 +90,7 @@ async function runHTTP(): Promise<void> {
 async function runStdio(): Promise<void> {
   const transport = new StdioServerTransport();
   await server.connect(transport);
-  console.error("🧠 Nemo MCP server running on stdio");
+  console.error("Nemo MCP server running on stdio");
 }
 
 // ── Entry Point ────────────────────────────────────────────

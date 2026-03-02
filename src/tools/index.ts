@@ -1,5 +1,5 @@
 // ============================================================
-// Nemo — Tool Registrations
+// Némor — Tool Registrations
 // ============================================================
 
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
@@ -24,10 +24,10 @@ export function registerAllTools(server: McpServer, storage: StorageAdapter): vo
   // ── Knowledge Tools ──────────────────────────────────────
 
   server.registerTool(
-    "nemo_save_knowledge",
+    "nemor_save_knowledge",
     {
       title: "Save Knowledge",
-      description: `Save a piece of knowledge to Nemo.
+      description: `Save a piece of knowledge to Némor.
 
 Use this when the user wants to store a conversation excerpt, an idea, a code snippet, a summary, or any valuable information for future reference.
 
@@ -79,7 +79,7 @@ Returns: The saved entry with its UUID`,
         return {
           content: [{
             type: "text" as const,
-            text: `✅ Saved to Nemo!\n\nID: ${entry.id}\nTitle: ${entry.title}\nCategory: ${entry.category}\nTags: ${entry.tags.join(", ") || "none"}\nType: ${entry.entry_type}`,
+            text: `Saved to Némor.\n\nID: ${entry.id}\nTitle: ${entry.title}\nCategory: ${entry.category}\nTags: ${entry.tags.join(", ") || "none"}\nType: ${entry.entry_type}`,
           }],
         };
       } catch (error) {
@@ -92,10 +92,10 @@ Returns: The saved entry with its UUID`,
   );
 
   server.registerTool(
-    "nemo_search_knowledge",
+    "nemor_search_knowledge",
     {
       title: "Search Knowledge",
-      description: `Search through stored knowledge in Nemo.
+      description: `Search through stored knowledge in Némor.
 
 Use this to find previously saved conversations, notes, ideas, snippets, or any stored content. Supports filtering by category and tags.
 
@@ -125,7 +125,7 @@ Returns: Matching entries with title, content preview, and metadata`,
 
         if (results.length === 0) {
           return {
-            content: [{ type: "text" as const, text: `No results found for "${params.query}". Try broader terms or check available categories with nemo_list_categories.` }],
+            content: [{ type: "text" as const, text: `No results found for "${params.query}". Try broader terms or check available categories with nemor_list_categories.` }],
           };
         }
 
@@ -147,7 +147,7 @@ Returns: Matching entries with title, content preview, and metadata`,
   );
 
   server.registerTool(
-    "nemo_get_knowledge",
+    "nemor_get_knowledge",
     {
       title: "Get Knowledge Entry",
       description: `Retrieve a specific knowledge entry by its UUID.
@@ -185,7 +185,7 @@ Returns: Full entry with all content and metadata`,
   );
 
   server.registerTool(
-    "nemo_delete_knowledge",
+    "nemor_delete_knowledge",
     {
       title: "Delete Knowledge Entry",
       description: `Delete a knowledge entry by its UUID.
@@ -211,7 +211,7 @@ Returns: Confirmation of deletion`,
         return {
           content: [{
             type: "text" as const,
-            text: success ? `✅ Deleted entry ${params.id}` : `Entry ${params.id} not found`,
+            text: success ? `Deleted entry ${params.id}` : `Entry ${params.id} not found`,
           }],
         };
       } catch (error) {
@@ -224,7 +224,7 @@ Returns: Confirmation of deletion`,
   );
 
   server.registerTool(
-    "nemo_list_categories",
+    "nemor_list_categories",
     {
       title: "List Categories",
       description: `List all knowledge categories with entry counts.
@@ -248,7 +248,7 @@ Returns: Categories sorted by number of entries`,
         }
         const formatted = categories.map((c) => `- **${c.category}** (${c.count} entries)`).join("\n");
         return {
-          content: [{ type: "text" as const, text: `📂 Categories:\n\n${formatted}` }],
+          content: [{ type: "text" as const, text: `Categories:\n\n${formatted}` }],
         };
       } catch (error) {
         return {
@@ -262,7 +262,7 @@ Returns: Categories sorted by number of entries`,
   // ── Reminder Tools ───────────────────────────────────────
 
   server.registerTool(
-    "nemo_add_reminder",
+    "nemor_add_reminder",
     {
       title: "Add Reminder",
       description: `Add a reminder with a due date and priority.
@@ -305,7 +305,7 @@ Returns: The created reminder`,
         return {
           content: [{
             type: "text" as const,
-            text: `⏰ Reminder set!\n\nID: ${reminder.id}\nTitle: ${reminder.title}\nDue: ${reminder.due_date}\nPriority: ${reminder.priority}`,
+            text: `Reminder set.\n\nID: ${reminder.id}\nTitle: ${reminder.title}\nDue: ${reminder.due_date}\nPriority: ${reminder.priority}`,
           }],
         };
       } catch (error) {
@@ -318,7 +318,7 @@ Returns: The created reminder`,
   );
 
   server.registerTool(
-    "nemo_list_reminders",
+    "nemor_list_reminders",
     {
       title: "List Reminders",
       description: `List all pending reminders (or all including completed ones).
@@ -340,17 +340,16 @@ Returns: Reminders sorted by due date`,
         const reminders = await storage.listReminders(params.include_done);
         if (reminders.length === 0) {
           return {
-            content: [{ type: "text" as const, text: "No pending reminders. 🎉" }],
+            content: [{ type: "text" as const, text: "No pending reminders." }],
           };
         }
         const formatted = reminders.map((r) => {
-          const status = r.is_done ? "✅" : "⏳";
-          const priorityEmoji = { low: "🟢", medium: "🟡", high: "🟠", urgent: "🔴" }[r.priority];
-          return `${status} ${priorityEmoji} **${r.title}**\n   ID: ${r.id}\n   Due: ${r.due_date}\n   ${r.description || ""}`;
+          const status = r.is_done ? "done" : "pending";
+          return `[${status}] Priority: ${r.priority} | **${r.title}**\n   ID: ${r.id}\n   Due: ${r.due_date}\n   ${r.description || ""}`;
         }).join("\n\n");
 
         return {
-          content: [{ type: "text" as const, text: `📋 Reminders:\n\n${formatted}` }],
+          content: [{ type: "text" as const, text: `Reminders:\n\n${formatted}` }],
         };
       } catch (error) {
         return {
@@ -362,7 +361,7 @@ Returns: Reminders sorted by due date`,
   );
 
   server.registerTool(
-    "nemo_complete_reminder",
+    "nemor_complete_reminder",
     {
       title: "Complete Reminder",
       description: `Mark a reminder as done.
@@ -388,7 +387,7 @@ Returns: Confirmation`,
         return {
           content: [{
             type: "text" as const,
-            text: success ? `✅ Reminder marked as done!` : `Reminder ${params.id} not found`,
+            text: success ? `Reminder marked as done.` : `Reminder ${params.id} not found`,
           }],
         };
       } catch (error) {
@@ -403,7 +402,7 @@ Returns: Confirmation`,
   // ── Bookmark Tools ───────────────────────────────────────
 
   server.registerTool(
-    "nemo_save_bookmark",
+    "nemor_save_bookmark",
     {
       title: "Save Bookmark",
       description: `Save a URL as a bookmark with tags and description.
@@ -448,7 +447,7 @@ Returns: The saved bookmark`,
         return {
           content: [{
             type: "text" as const,
-            text: `🔖 Bookmark saved!\n\nID: ${bookmark.id}\nTitle: ${bookmark.title}\nURL: ${bookmark.url}\nCategory: ${bookmark.category}`,
+            text: `Bookmark saved.\n\nID: ${bookmark.id}\nTitle: ${bookmark.title}\nURL: ${bookmark.url}\nCategory: ${bookmark.category}`,
           }],
         };
       } catch (error) {
@@ -461,7 +460,7 @@ Returns: The saved bookmark`,
   );
 
   server.registerTool(
-    "nemo_search_bookmarks",
+    "nemor_search_bookmarks",
     {
       title: "Search Bookmarks",
       description: `Search saved bookmarks by title, description, or URL.
@@ -488,7 +487,7 @@ Returns: Matching bookmarks`,
           };
         }
         const formatted = results.map((b, i) =>
-          `${i + 1}. **${b.title}**\n   🔗 ${b.url}\n   ${b.description || ""}\n   Tags: ${b.tags.join(", ") || "none"} | Category: ${b.category}`
+          `${i + 1}. **${b.title}**\n   URL: ${b.url}\n   ${b.description || ""}\n   Tags: ${b.tags.join(", ") || "none"} | Category: ${b.category}`
         ).join("\n\n");
         return {
           content: [{ type: "text" as const, text: `Found ${results.length} bookmark(s):\n\n${formatted}` }],
@@ -503,7 +502,7 @@ Returns: Matching bookmarks`,
   );
 
   server.registerTool(
-    "nemo_list_bookmarks",
+    "nemor_list_bookmarks",
     {
       title: "List Bookmarks",
       description: `List saved bookmarks, optionally filtered by category.
@@ -530,10 +529,10 @@ Returns: Bookmarks sorted by most recent`,
           };
         }
         const formatted = results.map((b, i) =>
-          `${i + 1}. **${b.title}**\n   🔗 ${b.url}\n   Tags: ${b.tags.join(", ") || "none"} | Category: ${b.category}`
+          `${i + 1}. **${b.title}**\n   URL: ${b.url}\n   Tags: ${b.tags.join(", ") || "none"} | Category: ${b.category}`
         ).join("\n\n");
         return {
-          content: [{ type: "text" as const, text: `🔖 Bookmarks:\n\n${formatted}` }],
+          content: [{ type: "text" as const, text: `Bookmarks:\n\n${formatted}` }],
         };
       } catch (error) {
         return {
@@ -547,10 +546,10 @@ Returns: Bookmarks sorted by most recent`,
   // ── Dashboard Tool ───────────────────────────────────────
 
   server.registerTool(
-    "nemo_stats",
+    "nemor_stats",
     {
       title: "Brain Stats",
-      description: `Get an overview of what's stored in Nemo.
+      description: `Get an overview of what's stored in Némor.
 
 Returns: Total counts for knowledge entries, reminders, bookmarks, and available categories`,
       inputSchema: {},
@@ -567,11 +566,11 @@ Returns: Total counts for knowledge entries, reminders, bookmarks, and available
         return {
           content: [{
             type: "text" as const,
-            text: `🧠 Nemo — Dashboard\n\n` +
-              `📝 Knowledge entries: ${stats.total_knowledge}\n` +
-              `⏰ Reminders: ${stats.total_reminders} (${stats.pending_reminders} pending)\n` +
-              `🔖 Bookmarks: ${stats.total_bookmarks}\n` +
-              `📂 Categories: ${stats.categories.join(", ") || "none yet"}`,
+            text: `Némor Dashboard\n\n` +
+              `Knowledge entries: ${stats.total_knowledge}\n` +
+              `Reminders: ${stats.total_reminders} (${stats.pending_reminders} pending)\n` +
+              `Bookmarks: ${stats.total_bookmarks}\n` +
+              `Categories: ${stats.categories.join(", ") || "none yet"}`,
           }],
         };
       } catch (error) {

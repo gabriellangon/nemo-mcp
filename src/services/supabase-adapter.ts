@@ -5,6 +5,8 @@
 import { createClient, SupabaseClient } from "@supabase/supabase-js";
 import type { StorageAdapter, NoteEntry, Reminder, Bookmark } from "../types.js";
 
+const NOTE_SELECT_COLUMNS = "id, title, content, category, tags, source, entry_type, metadata, created_at, updated_at";
+
 export class SupabaseAdapter implements StorageAdapter {
   private client: SupabaseClient;
 
@@ -20,7 +22,7 @@ export class SupabaseAdapter implements StorageAdapter {
     const { data, error } = await this.client
       .from("notes")
       .insert(entry)
-      .select()
+      .select(NOTE_SELECT_COLUMNS)
       .single();
 
     if (error) throw new Error(`Failed to save note: ${error.message}`);
@@ -33,38 +35,39 @@ export class SupabaseAdapter implements StorageAdapter {
     tags?: string[],
     limit: number = 20
   ): Promise<NoteEntry[]> {
-    let q = this.client
+    let ftsQuery = this.client
       .from("notes")
-      .select("*")
-      .textSearch("title", query, { type: "websearch" })
-      .limit(limit)
-      .order("created_at", { ascending: false });
-
-    // If websearch on title doesn't find results, we'll also search content
-    // For now, use ilike as a broader fallback
-    let { data, error } = await this.client
-      .from("notes")
-      .select("*")
-      .or(`title.ilike.%${query}%,content.ilike.%${query}%`)
-      .limit(limit)
-      .order("created_at", { ascending: false });
+      .select(NOTE_SELECT_COLUMNS)
+      .textSearch("search_vector", query, { config: "french", type: "websearch" });
 
     if (category) {
-      ({ data, error } = await this.client
-        .from("notes")
-        .select("*")
-        .or(`title.ilike.%${query}%,content.ilike.%${query}%`)
-        .eq("category", category)
-        .limit(limit)
-        .order("created_at", { ascending: false }));
+      ftsQuery = ftsQuery.eq("category", category);
     }
 
     if (tags && tags.length > 0) {
-      ({ data, error } = await this.client
+      ftsQuery = ftsQuery.overlaps("tags", tags);
+    }
+
+    let { data, error } = await ftsQuery
+      .limit(limit)
+      .order("created_at", { ascending: false });
+
+    // Fallback for older databases that do not yet have the search_vector column.
+    if (error) {
+      let fallbackQuery = this.client
         .from("notes")
-        .select("*")
-        .or(`title.ilike.%${query}%,content.ilike.%${query}%`)
-        .overlaps("tags", tags)
+        .select(NOTE_SELECT_COLUMNS)
+        .or(`title.ilike.%${query}%,content.ilike.%${query}%`);
+
+      if (category) {
+        fallbackQuery = fallbackQuery.eq("category", category);
+      }
+
+      if (tags && tags.length > 0) {
+        fallbackQuery = fallbackQuery.overlaps("tags", tags);
+      }
+
+      ({ data, error } = await fallbackQuery
         .limit(limit)
         .order("created_at", { ascending: false }));
     }
@@ -93,7 +96,7 @@ export class SupabaseAdapter implements StorageAdapter {
   async getNote(id: string): Promise<NoteEntry | null> {
     const { data, error } = await this.client
       .from("notes")
-      .select("*")
+      .select(NOTE_SELECT_COLUMNS)
       .eq("id", id)
       .single();
 

@@ -62,6 +62,12 @@ Best if you want full data ownership, everything on your VPS, no external depend
 Your Phone → Claude App → Your VPS (Docker: MCP Server + PostgreSQL)
 ```
 
+## Search Language
+
+Full-text search for notes is configured in French by default.
+
+If most of your notes are in another language, update the text search config so it matches your target language in `db/schema.sql`, `db/migrations/003_add_notes_search_vector.sql`, `src/services/supabase-adapter.ts`, and `src/services/postgres-adapter.ts`.
+
 ---
 
 ## Quick Start — Option A: Supabase

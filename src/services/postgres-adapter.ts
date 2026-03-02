@@ -6,6 +6,7 @@ import pg from "pg";
 import type { StorageAdapter, NoteEntry, Reminder, Bookmark } from "../types.js";
 
 const { Pool } = pg;
+const NOTE_COLUMNS = "id, title, content, category, tags, source, entry_type, metadata, created_at, updated_at";
 
 export class PostgresAdapter implements StorageAdapter {
   private pool: pg.Pool;
@@ -32,7 +33,7 @@ export class PostgresAdapter implements StorageAdapter {
     const result = await this.queryOne<NoteEntry>(
       `INSERT INTO notes (title, content, category, tags, source, entry_type, metadata)
        VALUES ($1, $2, $3, $4, $5, $6, $7)
-       RETURNING *`,
+       RETURNING ${NOTE_COLUMNS}`,
       [entry.title, entry.content, entry.category, entry.tags, entry.source, entry.entry_type, JSON.stringify(entry.metadata)]
     );
     if (!result) throw new Error("Failed to save note");
@@ -46,9 +47,9 @@ export class PostgresAdapter implements StorageAdapter {
     limit: number = 20
   ): Promise<NoteEntry[]> {
     let sql = `
-      SELECT *, ts_rank(to_tsvector('english', title || ' ' || content), plainto_tsquery('english', $1)) AS rank
+      SELECT ${NOTE_COLUMNS}, ts_rank(search_vector, websearch_to_tsquery('french', $1)) AS rank
       FROM notes
-      WHERE to_tsvector('english', title || ' ' || content) @@ plainto_tsquery('english', $1)
+      WHERE search_vector @@ websearch_to_tsquery('french', $1)
          OR title ILIKE '%' || $1 || '%'
          OR content ILIKE '%' || $1 || '%'
     `;
@@ -80,7 +81,7 @@ export class PostgresAdapter implements StorageAdapter {
   }
 
   async getNote(id: string): Promise<NoteEntry | null> {
-    return this.queryOne<NoteEntry>(`SELECT * FROM notes WHERE id = $1`, [id]);
+    return this.queryOne<NoteEntry>(`SELECT ${NOTE_COLUMNS} FROM notes WHERE id = $1`, [id]);
   }
 
   async deleteNote(id: string): Promise<boolean> {

@@ -7,6 +7,9 @@
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 -- Enable full-text search (already available in PostgreSQL)
+-- The default full-text search config for notes is French.
+-- If your content is mostly in another language, update the config here and in the adapters
+-- so it matches your target language.
 -- For Supabase: pgvector can be enabled later for semantic search
 
 -- ============================================================
@@ -22,13 +25,16 @@ CREATE TABLE IF NOT EXISTS notes (
     entry_type TEXT NOT NULL DEFAULT 'note'
         CHECK (entry_type IN ('conversation', 'note', 'idea', 'snippet', 'summary', 'resource')),
     metadata JSONB DEFAULT '{}',
+    search_vector TSVECTOR GENERATED ALWAYS AS (
+        to_tsvector('french', title || ' ' || content)
+    ) STORED,
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- Full-text search index
 CREATE INDEX IF NOT EXISTS idx_notes_fts ON notes
-    USING GIN (to_tsvector('english', title || ' ' || content));
+    USING GIN (search_vector);
 
 -- Category index
 CREATE INDEX IF NOT EXISTS idx_notes_category ON notes(category);

@@ -116,10 +116,12 @@ export async function main(): Promise<void> {
   await runStdio(server);
 }
 
-const isMainModule =
+const isDirectNodeEntry =
   process.argv[1] !== undefined && import.meta.url === pathToFileURL(process.argv[1]).href;
+const isPm2Process = process.env.pm_id !== undefined;
+const isTestRuntime = process.env.VITEST !== undefined;
 
-if (isMainModule) {
+if (!isTestRuntime && (isDirectNodeEntry || isPm2Process)) {
   main().catch((error) => {
     console.error("Server error:", error);
     process.exit(1);
